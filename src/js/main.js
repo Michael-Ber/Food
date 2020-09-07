@@ -36,53 +36,51 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    //Timer
+    let deadline = '2020-09-20';
 
-    const days = document.querySelector('#days'), 
-          hours = document.querySelector('#hours'),
-          minutes = document.querySelector('#minutes'),
-          seconds = document.querySelector('#seconds');
-    
-    const deadline = new Date('2020-09-10');
-
-    function calcMsLeft() {
-        return deadline - Date.now();
+    function getRemainingTime(endtime) {
+        let t = new Date(endtime) - Date.now(),
+            days = Math.floor((t/(24*60*60*1000))),
+            hours = Math.floor((t/(60*60*1000))%24),
+            minutes = Math.floor((t/(60*1000))%60),
+            seconds = Math.floor((t/(1000))%60);
+        
+        return {
+            'total': t,
+            'days' : days,
+            'hours' : hours,
+            'minutes' : minutes,
+            'seconds' : seconds
+        };
     }
 
-    function clearDate() {
-        days.textContent = '00';
-        hours.textContent = '00';
-        minutes.textContent = '00';
-        seconds.textContent = '00';
+    function addDateToPage(selector, endtime) {
+        const timer = document.querySelector(selector),
+              days = timer.querySelector('#days'), 
+              hours = timer.querySelector('#hours'),
+              minutes = timer.querySelector('#minutes'),
+              seconds = timer.querySelector('#seconds'),
+              timerID = setInterval(addTextContent, 1000);
+        
+        addTextContent();
+        
+        function addTextContent () {
+            let a = getRemainingTime(endtime);
+            days.textContent = a.days < 10 ? `0${a.days}` : a.days;
+            hours.textContent = a.hours < 10 ? `0${a.hours}` : a.hours;
+            minutes.textContent = a.minutes < 10 ? `0${a.minutes}` : a.minutes;
+            seconds.textContent = a.seconds < 10 ? `0${a.seconds}` : a.seconds;
+            if(a.total <= 0) {
+                clearInterval(timerID);
+                days.textContent = '00';
+                hours.textContent = '00';
+                minutes.textContent = '00';
+                seconds.textContent = '00';
+            }
+        }
+
     }
-    clearDate();
-
-    function updateCounter() {
-        let timerId = setInterval(function() {
-            let timeLeft = calcMsLeft(),
-                daysLeft = Math.floor(timeLeft/(24*60*60*1000)),
-                hoursLeft = Math.floor(timeLeft/(60*60*1000)),
-                minutesLeft = Math.floor(timeLeft/(60*1000)),
-                secondsLeft = Math.floor(timeLeft/1000);
-            
-            let daysZ = daysLeft,
-                hoursZ = (hoursLeft > 24 ? (hoursLeft - (daysLeft*24)) : hoursLeft),
-                minutesZ = minutesLeft > 60 ? (minutesLeft - (hoursLeft*60)) : minutesLeft,
-                secondsZ = secondsLeft > 60 ? (secondsLeft - (minutesLeft*60)) : secondsLeft; 
-
-            
-            days.textContent = daysZ < 10 ? `0${daysZ}` : daysZ;
-            hours.textContent = hoursZ < 10 ? `0${hoursZ}` : hoursZ;
-            minutes.textContent = minutesZ < 10 ? `0${minutesZ}` : minutesZ;
-            seconds.textContent = secondsZ < 10 ? `0${secondsZ}` : secondsZ;
-
-            
-
-        }, 1000); 
-    }
-
-    updateCounter();
-    
+    addDateToPage('.timer', deadline);
    
 
 
