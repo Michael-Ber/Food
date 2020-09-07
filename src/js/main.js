@@ -1,4 +1,6 @@
 window.addEventListener('DOMContentLoaded', () => {
+
+    //TABS
     const tabContent = document.querySelectorAll('.tabcontent'),
           tabItem = document.querySelectorAll('.tabheader__item'),
           tabParent = document.querySelector('.tabheader__items');
@@ -47,8 +49,13 @@ window.addEventListener('DOMContentLoaded', () => {
         return deadline - Date.now();
     }
 
-    
-
+    function clearDate() {
+        days.textContent = '00';
+        hours.textContent = '00';
+        minutes.textContent = '00';
+        seconds.textContent = '00';
+    }
+    clearDate();
 
     function updateCounter() {
         let timerId = setInterval(function() {
