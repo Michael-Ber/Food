@@ -96,41 +96,69 @@
 window.addEventListener('DOMContentLoaded', () => {
   const tabContent = document.querySelectorAll('.tabcontent'),
         tabItem = document.querySelectorAll('.tabheader__item'),
-        tabContainer = document.querySelector('.tabcontainer');
+        tabParent = document.querySelector('.tabheader__items');
 
-  const removeActive = arr => {
-    arr.forEach(item => {
-      item.style.display = 'none';
+  function hideTabContent() {
+    tabContent.forEach(item => {
+      item.classList.remove('show');
+      item.classList.add('hide');
     });
-  };
-
-  removeActive(tabContent);
-
-  const removeActiveItem = item => {
-    item.forEach(item => {
+    tabItem.forEach(item => {
       item.classList.remove('tabheader__item_active');
     });
-  };
+  }
 
-  const addActive = item => {
-    item.style.display = 'block';
-  };
+  hideTabContent();
 
-  const addTabContent = (item, content) => {
-    item.forEach((item, i) => {
-      if (item.classList.contains('tabheader__item_active')) {
-        addActive(content[i]);
-      }
-    });
-  };
+  function showTabContent(i = 0) {
+    tabContent[i].classList.remove('hide');
+    tabContent[i].classList.add('show');
+    tabItem[i].classList.add('tabheader__item_active');
+  }
 
-  addTabContent(tabItem, tabContent);
-  tabContainer.addEventListener('click', e => {
-    removeActive(tabContent);
-    removeActiveItem(tabItem);
-    e.target.classList.add('tabheader__item_active');
-    addTabContent(tabItem, tabContent);
-  });
+  showTabContent();
+  tabParent.addEventListener('click', e => {
+    let target = e.target;
+
+    if (target && target.classList.contains('tabheader__item')) {
+      tabItem.forEach((item, i) => {
+        if (target == item) {
+          hideTabContent();
+          showTabContent(i);
+        }
+      });
+    }
+  }); //Timer
+
+  const days = document.querySelector('#days'),
+        hours = document.querySelector('#hours'),
+        minutes = document.querySelector('#minutes'),
+        seconds = document.querySelector('#seconds');
+  const deadline = new Date('2020-09-10');
+
+  function calcMsLeft() {
+    return deadline - Date.now();
+  }
+
+  function updateCounter() {
+    let timerId = setInterval(function () {
+      let timeLeft = calcMsLeft(),
+          daysLeft = Math.floor(timeLeft / (24 * 60 * 60 * 1000)),
+          hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000)),
+          minutesLeft = Math.floor(timeLeft / (60 * 1000)),
+          secondsLeft = Math.floor(timeLeft / 1000);
+      let daysZ = daysLeft,
+          hoursZ = hoursLeft > 24 ? hoursLeft - daysLeft * 24 : hoursLeft,
+          minutesZ = minutesLeft > 60 ? minutesLeft - hoursLeft * 60 : minutesLeft,
+          secondsZ = secondsLeft > 60 ? secondsLeft - minutesLeft * 60 : secondsLeft;
+      days.textContent = daysZ < 10 ? `0${daysZ}` : daysZ;
+      hours.textContent = hoursZ < 10 ? `0${hoursZ}` : hoursZ;
+      minutes.textContent = minutesZ < 10 ? `0${minutesZ}` : minutesZ;
+      seconds.textContent = secondsZ < 10 ? `0${secondsZ}` : secondsZ;
+    }, 1000);
+  }
+
+  updateCounter();
 });
 
 /***/ })
