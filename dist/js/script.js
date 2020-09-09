@@ -178,23 +178,21 @@ window.addEventListener('DOMContentLoaded', () => {
   console.log(document.body.scrollHeight); //Modal window
 
   const btns = document.querySelectorAll('[data-modal]'),
-        modal = document.querySelector('.modal'),
-        close = modal.querySelector('[data-close]');
+        modal = document.querySelector('.modal');
   btns.forEach(btn => {
     btn.addEventListener('click', showModal);
   });
-  close.addEventListener('click', closeModal);
   window.addEventListener('keyup', e => {
     if (e.code === "Escape" && modal.classList.contains('show')) {
       closeModal();
     }
   });
   window.addEventListener('click', e => {
-    if (e.target.classList.contains('modal')) {
+    if (e.target.classList.contains('modal') || e.target.getAttribute('data-close') == '') {
       closeModal();
     }
   });
-  let timerID = setTimeout(showModal, 14000);
+  let timerID = setTimeout(showModal, 50000);
   console.log(document.documentElement.scrollTop);
   window.addEventListener('scroll', showModalByScroll);
 
@@ -218,47 +216,115 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
   class Card {
-    constructor(parent, img, alt, title, text, cost, valuta) {
+    constructor(parent, img, alt, title, text, cost, ...classes) {
       this.parent = document.querySelector(parent);
       this.img = img;
       this.alt = alt;
       this.title = title;
       this.text = text;
       this.cost = cost;
-      this.valuta = valuta;
+      this.classes = classes;
       this.koef = 27;
       this.changeValutaToUSD();
     }
 
     changeValutaToUSD() {
-      this.cost = this.cost / this.koef;
+      this.cost = this.cost * this.koef;
     }
 
     render() {
       const element = document.createElement('div');
-      element.innerHTML += `
-                <div class="menu__item">
-                    <img src="img/tabs/${this.img}.jpg" alt=${this.alt}>
-                    <h3 class="menu__item-subtitle">${this.title}</h3>
-                    <div class="menu__item-descr">${this.text}</div>
-                    <div class="menu__item-divider"></div>
-                    <div class="menu__item-price">
-                        <div class="menu__item-cost">Цена:</div>
-                        <div class="menu__item-total"><span>${Math.floor(this.cost)}</span> длр/день</div>
-                    </div> 
-                </div>    
+
+      if (this.classes.length === 0) {
+        this.classes = 'menu__item';
+        element.classList.add(this.element);
+      } else {
+        this.classes.forEach(className => {
+          element.classList.add(className);
+        });
+      }
+
+      element.innerHTML = `
+                <img src="img/tabs/${this.img}.jpg" alt=${this.alt}>
+                <h3 class="menu__item-subtitle">${this.title}</h3>
+                <div class="menu__item-descr">${this.text}</div>
+                <div class="menu__item-divider"></div>
+                <div class="menu__item-price">
+                    <div class="menu__item-cost">Цена:</div>
+                    <div class="menu__item-total"><span>${Math.floor(this.cost)}</span> грн/день</div>
+                </div>   
             `;
       this.parent.append(element);
     }
 
   }
 
-  const vegy = new Card('.menu__field .container', 'vegy', 'vegy', 'Меню "Фитнес"', 'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 229, 'rub');
+  const vegy = new Card('.menu__field .container', 'vegy', 'vegy', 'Меню "Фитнес"', 'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 9, 'menu__item');
   vegy.render();
-  const elite = new Card('.menu__field .container', 'elite', 'elite', 'Меню "Премиум"', 'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!', 550, 'grn');
+  const elite = new Card('.menu__field .container', 'elite', 'elite', 'Меню "Премиум"', 'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!', 15, 'menu__item');
   elite.render();
-  const post = new Card('.menu__field .container', 'post', 'post', 'Меню "Постное"', 'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.', 430, 'grn');
-  post.render();
+  const post = new Card('.menu__field .container', 'post', 'post', 'Меню "Постное"', 'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.', 12, 'menu__item');
+  post.render(); //Server
+
+  const forms = document.querySelectorAll('form');
+  const messageBox = {
+    'loading': "img/form/spinner1.gif",
+    'success': "Спасибо, скоро мы с вами свяжемся",
+    'failure': "Что-то пошло не так"
+  };
+  forms.forEach(item => {
+    item.addEventListener('submit', e => {
+      e.preventDefault();
+      const spinner = document.createElement('img');
+      spinner.src = messageBox.loading;
+      spinner.style.cssText = `
+				display: block;
+				margin: 10px auto 0 auto;	
+				max-width: 20px;
+		   `;
+      item.insertAdjacentElement("afterend", spinner);
+      const request = new XMLHttpRequest();
+      request.open('POST', 'js/server.php');
+      request.setRequestHeader('Content-type', 'application/json');
+      let formData = new FormData(item);
+      let object = {};
+      formData.forEach((value, key) => {
+        object[key] = value;
+      });
+      let jsonData = JSON.stringify(object);
+      request.send(jsonData);
+      request.addEventListener('load', () => {
+        if (request.status === 200) {
+          showThanksModal(messageBox.success);
+          console.log(request.response);
+          item.reset();
+          spinner.remove();
+        } else {
+          showThanksModal(messageBox.failure);
+        }
+      });
+    });
+  });
+
+  function showThanksModal(message) {
+    const prevModalDialog = document.querySelector('.modal__dialog');
+    prevModalDialog.classList.add('hide');
+    const thanksModalDialog = document.createElement('div');
+    thanksModalDialog.classList.add('modal__dialog');
+    thanksModalDialog.innerHTML = `
+			<div class="modal__content">
+				<div class="modal__close" data-close>&times;</div>
+				<div class="modal__title">${message}</div>
+			</div>
+	   `;
+    modal.append(thanksModalDialog);
+    setTimeout(() => {
+      closeModal();
+      prevModalDialog.classList.add('show');
+      prevModalDialog.classList.remove('hide');
+      thanksModalDialog.remove();
+    }, 4000);
+  }
 });
 
 /***/ })
