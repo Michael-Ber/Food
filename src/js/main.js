@@ -109,27 +109,29 @@ window.addEventListener('DOMContentLoaded', () => {
     }); 
 
    
-    let timerID = setTimeout(showModal, 50000);
+    let timerID = setTimeout(showModal, 500000);
 
-    console.log(document.documentElement.scrollTop);
     window.addEventListener('scroll', showModalByScroll);
     
      
     function showModal() {
-        modal.classList.toggle('show');
+        modal.classList.remove('hide');
+        modal.classList.add('show');
         document.body.style.overflow = 'hidden';
         clearInterval(timerID);
     }
     
     
     function closeModal() {
-        modal.classList.toggle('show');
+        modal.classList.remove('show');
+        modal.classList.add('hide');
         document.body.style.overflow = '';
     }
 
     function showModalByScroll () {
         if(document.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
             showModal();
+            console.log('error');
             window.removeEventListener('scroll', showModalByScroll);
         }
     }
@@ -212,83 +214,75 @@ window.addEventListener('DOMContentLoaded', () => {
 
    //Server
 
-   const forms = document.querySelectorAll('form');
-
-   const messageBox = {
+    const forms = document.querySelectorAll('form');
+ 
+    const messageBox = {
        'loading': "img/form/spinner1.gif",
        'success': "Спасибо, скоро мы с вами свяжемся",
        'failure': "Что-то пошло не так"
-   };
+    };
 
-   forms.forEach(item => {
-       item.addEventListener('submit', (e) => {
-           e.preventDefault();
-		   const spinner = document.createElement('img');
-		   spinner.src = messageBox.loading;
-		   spinner.style.cssText = `
-				display: block;
-				margin: 10px auto 0 auto;	
-				max-width: 20px;
-		   `;
-           item.insertAdjacentElement("afterend", spinner);
+    forms.forEach(form => {
+	   postData(form);
+    });
+    function postData(form) {
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+			const spinner = document.createElement('img');
+			spinner.src = messageBox.loading;
+			spinner.style.cssText = `
+					display: block;
+					margin: 10px auto 0 auto;	
+					max-width: 20px;
+			`;
+			form.insertAdjacentElement("afterend", spinner);
 
-           const request = new XMLHttpRequest();
-           request.open('POST', 'js/server.php');
-           request.setRequestHeader('Content-type', 'application/json');
-           let formData = new FormData(item);
-           let object = {};
-           formData.forEach((value, key) => {
-               object[key] = value;
-           });
-           let jsonData = JSON.stringify(object);
-           request.send(jsonData);
+			let formData = new FormData(form);
+			let object = {};
+			formData.forEach((value, key) => {
+				object[key] = value;
+			});
+			let jsonData = JSON.stringify(object);
 
-           request.addEventListener('load', () => {
-               if(request.status === 200) {
-				   showThanksModal(messageBox.success);
-                   console.log(request.response);
-				   item.reset();
-				   spinner.remove();
-				   
-                }else {
+			fetch('js/server.php', {
+				method: 'POST',
+				body: jsonData,
+				headers: {
+					'Content-type': 'application/json'
+				}
+			}).then(response => {
+					showThanksModal(messageBox.success);
+					spinner.remove();
+					console.log(response);
+				}).finally(() => {
+					form.reset();
+				}).catch(() => {
 					showThanksModal(messageBox.failure);
-                }
-           });
-       });
-   });
+				})
 
-   function showThanksModal(message) {
-	   const prevModalDialog = document.querySelector('.modal__dialog');
-       prevModalDialog.classList.add('hide');
+		});
+    }
 
-       const thanksModalDialog = document.createElement('div');
-       thanksModalDialog.classList.add('modal__dialog');
-       thanksModalDialog.innerHTML = `
+    function showThanksModal(message) {
+	    const prevModalDialog = document.querySelector('.modal__dialog');
+        prevModalDialog.classList.add('hide');
+
+        const thanksModalDialog = document.createElement('div');
+        thanksModalDialog.classList.add('modal__dialog');
+        thanksModalDialog.innerHTML = `
 			<div class="modal__content">
 				<div class="modal__close" data-close>&times;</div>
 				<div class="modal__title">${message}</div>
 			</div>
-	   `;
-	   modal.append(thanksModalDialog);
-	   setTimeout(() => {
-			closeModal();
+	    `;
+	    modal.append(thanksModalDialog);
+	    setTimeout(() => {
+            thanksModalDialog.remove();	  
 			prevModalDialog.classList.add('show');
 			prevModalDialog.classList.remove('hide');
-			thanksModalDialog.remove();	   
+            closeModal();
 		}, 4000)
    }
-
-
-
-
-    
-
-   
-
-
-
-    
-    
 
 });
 

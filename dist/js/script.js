@@ -90,8 +90,12 @@
 /*!************************!*\
   !*** ./src/js/main.js ***!
   \************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+!(function webpackMissingModule() { var e = new Error("Cannot find module 'core-js/modules/es.promise.finally'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
 
 window.addEventListener('DOMContentLoaded', () => {
   //TABS
@@ -192,24 +196,26 @@ window.addEventListener('DOMContentLoaded', () => {
       closeModal();
     }
   });
-  let timerID = setTimeout(showModal, 50000);
-  console.log(document.documentElement.scrollTop);
+  let timerID = setTimeout(showModal, 500000);
   window.addEventListener('scroll', showModalByScroll);
 
   function showModal() {
-    modal.classList.toggle('show');
+    modal.classList.remove('hide');
+    modal.classList.add('show');
     document.body.style.overflow = 'hidden';
     clearInterval(timerID);
   }
 
   function closeModal() {
-    modal.classList.toggle('show');
+    modal.classList.remove('show');
+    modal.classList.add('hide');
     document.body.style.overflow = '';
   }
 
   function showModalByScroll() {
     if (document.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
       showModal();
+      console.log('error');
       window.removeEventListener('scroll', showModalByScroll);
     }
   } //Work with class
@@ -272,39 +278,44 @@ window.addEventListener('DOMContentLoaded', () => {
     'success': "Спасибо, скоро мы с вами свяжемся",
     'failure': "Что-то пошло не так"
   };
-  forms.forEach(item => {
-    item.addEventListener('submit', e => {
+  forms.forEach(form => {
+    postData(form);
+  });
+
+  function postData(form) {
+    form.addEventListener('submit', e => {
       e.preventDefault();
       const spinner = document.createElement('img');
       spinner.src = messageBox.loading;
       spinner.style.cssText = `
-				display: block;
-				margin: 10px auto 0 auto;	
-				max-width: 20px;
-		   `;
-      item.insertAdjacentElement("afterend", spinner);
-      const request = new XMLHttpRequest();
-      request.open('POST', 'js/server.php');
-      request.setRequestHeader('Content-type', 'application/json');
-      let formData = new FormData(item);
+					display: block;
+					margin: 10px auto 0 auto;	
+					max-width: 20px;
+			`;
+      form.insertAdjacentElement("afterend", spinner);
+      let formData = new FormData(form);
       let object = {};
       formData.forEach((value, key) => {
         object[key] = value;
       });
       let jsonData = JSON.stringify(object);
-      request.send(jsonData);
-      request.addEventListener('load', () => {
-        if (request.status === 200) {
-          showThanksModal(messageBox.success);
-          console.log(request.response);
-          item.reset();
-          spinner.remove();
-        } else {
-          showThanksModal(messageBox.failure);
+      fetch('js/server.php', {
+        method: 'POST',
+        body: jsonData,
+        headers: {
+          'Content-type': 'application/json'
         }
+      }).then(response => {
+        showThanksModal(messageBox.success);
+        spinner.remove();
+        console.log(response);
+      }).finally(() => {
+        form.reset();
+      }).catch(() => {
+        showThanksModal(messageBox.failure);
       });
     });
-  });
+  }
 
   function showThanksModal(message) {
     const prevModalDialog = document.querySelector('.modal__dialog');
@@ -316,13 +327,13 @@ window.addEventListener('DOMContentLoaded', () => {
 				<div class="modal__close" data-close>&times;</div>
 				<div class="modal__title">${message}</div>
 			</div>
-	   `;
+	    `;
     modal.append(thanksModalDialog);
     setTimeout(() => {
-      closeModal();
+      thanksModalDialog.remove();
       prevModalDialog.classList.add('show');
       prevModalDialog.classList.remove('hide');
-      thanksModalDialog.remove();
+      closeModal();
     }, 4000);
   }
 });
