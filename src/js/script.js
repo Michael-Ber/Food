@@ -131,7 +131,6 @@ window.addEventListener('DOMContentLoaded', () => {
     function showModalByScroll () {
         if(document.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
             showModal();
-            console.log('error');
             window.removeEventListener('scroll', showModalByScroll);
         }
     }
@@ -166,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
             }
             element.innerHTML = `
-                <img src="img/tabs/${this.img}.jpg" alt=${this.alt}>
+                <img src="${this.img}" alt=${this.alt}>
                 <h3 class="menu__item-subtitle">${this.title}</h3>
                 <div class="menu__item-descr">${this.text}</div>
                 <div class="menu__item-divider"></div>
@@ -179,38 +178,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const vegy = new Card(
-        ('.menu__field .container'), 
-        'vegy',
-        'vegy', 
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 
-        9,
-        'menu__item'
-        );
-    vegy.render();
+    const getData = async (url) => {
+        const res = await fetch(url);
+        if(!res.ok) {
+            throw new Error(`Could not fetch ${url}, status : ${res.status}`);
+        }
+        return await res.json();
+    };
 
-   const elite = new Card(
-       ('.menu__field .container'), 
-       'elite',
-       'elite',
-       'Меню "Премиум"',
-       'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-       15,
-       'menu__item'
-       );
-   elite.render(); 
+    getData('http://localhost:3000/menu')
+        .then(data => data.forEach(({img, altimg, title, descr, price}) => {
+            new Card('.menu__field .container',img, altimg, title, descr, price, 'menu__item').render();
+        }))
 
-   const post = new Card(
-       ('.menu__field .container'), 
-       'post',
-       'post',
-       'Меню "Постное"',
-       'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-       12,
-       'menu__item'
-   );
-   post.render();
+
 
    //Server
 
@@ -223,9 +204,21 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     forms.forEach(form => {
-	   postData(form);
+	   bindPostData(form);
     });
-    function postData(form) {
+
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            body: data,
+            headers: {
+                'Content-type': 'application/json'
+            }
+        })
+        return await res.json();
+    };
+
+    function bindPostData(form) {
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 			const spinner = document.createElement('img');
@@ -238,19 +231,10 @@ window.addEventListener('DOMContentLoaded', () => {
 			form.insertAdjacentElement("afterend", spinner);
 
 			let formData = new FormData(form);
-			let object = {};
-			formData.forEach((value, key) => {
-				object[key] = value;
-			});
-			let jsonData = JSON.stringify(object);
+			let json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-			fetch('js/server.php', {
-				method: 'POST',
-				body: jsonData,
-				headers: {
-					'Content-type': 'application/json'
-				}
-			}).then(response => {
+            postData('http://localhost:3000/requests', json)
+            .then(response => {
 					showThanksModal(messageBox.success);
 					spinner.remove();
 					console.log(response);
