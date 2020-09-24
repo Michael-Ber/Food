@@ -266,7 +266,97 @@ window.addEventListener('DOMContentLoaded', () => {
 			prevModalDialog.classList.remove('hide');
             closeModal();
 		}, 4000)
-   }
+    }
+
+    // Carousel
+
+    const current = document.querySelector('#current'),
+          total = document.querySelector('#total'),
+          slider = document.querySelector('.offer__slider'),
+          slides = document.querySelectorAll('.offer__slide'),
+          wrapper = document.querySelector('.offer__slider-wrapper'),
+          track = document.querySelector('.offer__slider-track'),
+          width = window.getComputedStyle(wrapper).width,
+          prev = document.querySelector('.offer__slider-prev'),
+          next = document.querySelector('.offer__slider-next');
+    
+    let offset = 0,
+        slideIndex = 1;
+    
+    slides.forEach(item => {
+        item.style.minWidth = width;
+    });
+
+    track.style.width = `${slides.length * (+width.slice(0, -2))}px`;
+    moveSlides();
+
+    next.addEventListener('click', () => {
+        if(offset >= ((slides.length-1) * +width.slice(0,-2))) {
+            offset = 0;
+            slideIndex = 1;
+        }else {
+            offset += +width.slice(0, -2);
+            slideIndex += 1;
+        }
+        moveSlides();
+    });
+
+    prev.addEventListener('click', () => {
+        if(offset <= 0) {
+            offset = (slides.length-1)*(+width.slice(0, -2));
+            slideIndex = slides.length;
+        }else {
+            offset -= (+width.slice(0,-2));
+            slideIndex -= 1;
+        }
+        moveSlides();
+    });
+
+    function moveSlides () {
+        track.style.transform = `translateX(-${offset}px)`; 
+        if(slides.length < 10) {
+            current.textContent = "0" + slideIndex;
+        }else {
+            current.textContent = slideIndex;
+        }
+    }
+
+    const dots = document.createElement('div');
+    dots.classList.add('offer__slider-dots');
+    dots.style.cssText = `
+        display: flex;
+        margin: 20px auto 0 auto;
+    `;
+
+    for (let i=0; i < slides.length; i++) {
+        dots.innerHTML += `
+            <div class="offer__slider-dot"></div>
+        `;
+    }
+    slider.append(dots);
+
+    const dot = document.querySelectorAll('.offer__slider-dot');
+    dot.forEach(item => {
+        item.style.cssText = `
+            width: 12px;
+            height: 12px;
+            border-radius: 100%;
+            border: 1px solid #393939;
+            margin-right: 10px;
+            cursor: pointer;
+        `;
+    });
+
+    dot[(slideIndex-1)].classList.add('active');
+
+    dots.addEventListener('click', (e) => {
+        if(e.target && e.target.classList.contains('offer__slider-dot')) {
+            
+        }
+    });
+
+    
+    
 
 });
 
