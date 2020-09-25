@@ -313,16 +313,16 @@ window.addEventListener('DOMContentLoaded', () => {
         item.style.minWidth = width;
     });
 
-    track.style.width = `${slides.length * (+width.slice(0, -2))}px`;
+    track.style.width = `${slides.length * 100}%`;
 
     initSlider();
 
     next.addEventListener('click', () => {
-        if(offset >= ((slides.length-1) * +width.slice(0,-2))) {
+        if(offset >= ((slides.length-1) * strToNumber(width))) {
             offset = 0;
             slideIndex = 1;
         }else {
-            offset += +width.slice(0, -2);
+            offset += strToNumber(width);
             slideIndex += 1;
         }
         moveSlides(slideIndex, offset, track);
@@ -332,10 +332,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     prev.addEventListener('click', () => {
         if(offset <= 0) {
-            offset = (slides.length-1)*(+width.slice(0, -2));
+            offset = (slides.length-1)*strToNumber(width);
             slideIndex = slides.length;
         }else {
-            offset -= (+width.slice(0,-2));
+            offset -= strToNumber(width);
             slideIndex -= 1;
         }
         moveSlides(slideIndex, offset, track);
@@ -348,7 +348,7 @@ window.addEventListener('DOMContentLoaded', () => {
             dot.forEach((item, i) => {
                 if(e.target == item) {
                     slideIndex = i + 1;
-                    offset = +width.slice(0, -2) * (slideIndex-1);
+                    offset = strToNumber(width) * (slideIndex-1);
                     moveSlides(slideIndex, offset, track);
                     getActualPosition(dot, slideIndex-1, 'active');
                     getActualPosition(slides, slideIndex-1, 'actual');
@@ -396,6 +396,124 @@ window.addEventListener('DOMContentLoaded', () => {
     function addActive(item, className) {
         item.classList.add(className);
     }
+
+    function strToNumber(str) {
+        return +str.replace(/\D/ig, '');
+    }
+
+    //Calculator
+
+    
+
+
+    const genderID = document.querySelector('#gender'),
+          maleID = document.querySelector('#male'),
+          femaleID = document.querySelector('#female'),
+          activityID = document.querySelector('#activity'),
+          lowID = document.querySelector('#low')
+          smallID = document.querySelector('#small')
+          mediumID = document.querySelector('#medium')
+          highID = document.querySelector('#high'),
+          result = document.querySelector('.calculating__result span'),
+          heightID = document.querySelector('#height'),
+          weightID = document.querySelector('#weight'),
+          ageID = document.querySelector('#age'),
+          calcItem = document.querySelectorAll('.calculating__choose-item');
+    
+    removeActive(calcItem, 'calculating__choose-item_active');
+
+
+
+
+    let low = 1.5,
+        small = 1.4,
+        medium = 1.3,
+        high = 1.2,
+        genderType,
+        activity,
+        height,
+        weight, 
+        age;
+
+    
+
+
+
+    function getSexOrActivity(parentID) {
+        parentID.addEventListener('click', (e) => {
+            let target = e.target;
+            if(target && target.classList.contains('calculating__choose-item')) {
+                switch(target.id) {
+                    case 'male':
+                        genderType = 'male';
+                        break;
+                    case 'female':
+                        genderType = 'female';
+                        break;
+                    case 'low':
+                        activity = low;
+                        break;
+                    case 'small':
+                        activity = small;
+                        break;
+                    case 'medium':
+                        activity = medium;
+                        break;
+                    case 'high':
+                        activity = high;
+                        break;
+                }
+                removeActive(calcItem, 'calculating__choose-item_active');
+                addActive(target, 'calculating__choose-item_active');
+            }
+        });  
+    }
+    getSexOrActivity(genderID);
+    getSexOrActivity(activityID);
+    getBiometricValue(heightID);
+    getBiometricValue(weightID);
+    getBiometricValue(ageID);
+    calcResult(genderType, weight, height, age, activity);
+
+
+    function calcResult(genderType, weight, height, age, activity) {
+        if(genderType == 'male') {
+            result.textContent = `${(88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age))*activity}`;
+        }else if(genderType == 'female') {
+            result.textContent = `${(447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age))*activity}`;
+        }else {
+            result.textContent = 'Пол не быбран';
+        }
+    }
+
+    function getBiometricValue(elementID) {
+        elementID.addEventListener('change', () => {
+            returning = +elementID.value;
+            switch(elementID.id) {
+                case 'height':
+                    height = +elementID.value;
+                    break;
+                case 'weight':
+                    weight = +elementID.value;
+                    break;
+                case 'age':
+                    age = +elementID.value;
+                    break;
+            }
+        });
+    }
+
+    
+
+
+   
+    
+
+
+
+
+
+
 
     
 
