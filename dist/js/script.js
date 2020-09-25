@@ -279,47 +279,6 @@ window.addEventListener('DOMContentLoaded', () => {
           width = window.getComputedStyle(wrapper).width,
           prev = document.querySelector('.offer__slider-prev'),
           next = document.querySelector('.offer__slider-next');
-    
-    let offset = 0,
-        slideIndex = 1;
-    
-    slides.forEach(item => {
-        item.style.minWidth = width;
-    });
-
-    track.style.width = `${slides.length * (+width.slice(0, -2))}px`;
-    moveSlides();
-
-    next.addEventListener('click', () => {
-        if(offset >= ((slides.length-1) * +width.slice(0,-2))) {
-            offset = 0;
-            slideIndex = 1;
-        }else {
-            offset += +width.slice(0, -2);
-            slideIndex += 1;
-        }
-        moveSlides();
-    });
-
-    prev.addEventListener('click', () => {
-        if(offset <= 0) {
-            offset = (slides.length-1)*(+width.slice(0, -2));
-            slideIndex = slides.length;
-        }else {
-            offset -= (+width.slice(0,-2));
-            slideIndex -= 1;
-        }
-        moveSlides();
-    });
-
-    function moveSlides () {
-        track.style.transform = `translateX(-${offset}px)`; 
-        if(slides.length < 10) {
-            current.textContent = "0" + slideIndex;
-        }else {
-            current.textContent = slideIndex;
-        }
-    }
 
     const dots = document.createElement('div');
     dots.classList.add('offer__slider-dots');
@@ -346,14 +305,99 @@ window.addEventListener('DOMContentLoaded', () => {
             cursor: pointer;
         `;
     });
+    
+    let offset = 0,
+        slideIndex = 1;
+    
+    slides.forEach(item => {
+        item.style.minWidth = width;
+    });
 
-    dot[(slideIndex-1)].classList.add('active');
+    track.style.width = `${slides.length * (+width.slice(0, -2))}px`;
+
+    initSlider();
+
+    next.addEventListener('click', () => {
+        if(offset >= ((slides.length-1) * +width.slice(0,-2))) {
+            offset = 0;
+            slideIndex = 1;
+        }else {
+            offset += +width.slice(0, -2);
+            slideIndex += 1;
+        }
+        moveSlides(slideIndex, offset, track);
+        getActualPosition(slides, slideIndex-1, 'actual');
+        getActualPosition(dot, slideIndex-1, 'active');
+    });
+
+    prev.addEventListener('click', () => {
+        if(offset <= 0) {
+            offset = (slides.length-1)*(+width.slice(0, -2));
+            slideIndex = slides.length;
+        }else {
+            offset -= (+width.slice(0,-2));
+            slideIndex -= 1;
+        }
+        moveSlides(slideIndex, offset, track);
+        getActualPosition(slides, slideIndex-1, 'actual');
+        getActualPosition(dot, slideIndex-1, 'active');
+    });
 
     dots.addEventListener('click', (e) => {
         if(e.target && e.target.classList.contains('offer__slider-dot')) {
-            
+            dot.forEach((item, i) => {
+                if(e.target == item) {
+                    slideIndex = i + 1;
+                    offset = +width.slice(0, -2) * (slideIndex-1);
+                    moveSlides(slideIndex, offset, track);
+                    getActualPosition(dot, slideIndex-1, 'active');
+                    getActualPosition(slides, slideIndex-1, 'actual');
+                }
+            });
         }
     });
+
+    function initSlider() {
+        moveSlides(slideIndex, offset, track);
+        getTotalSlides(total, slides);
+        getActualPosition(slides, slideIndex-1, 'actual');
+        getActualPosition(dot, slideIndex-1, 'active');
+
+    }
+
+    function moveSlides (slideIndex, offset, movingTrack) {
+        movingTrack.style.transform = `translateX(-${offset}px)`; 
+        if(slides.length < 10) {
+            current.textContent = "0" + slideIndex;
+        }else {
+            current.textContent = slideIndex;
+        }
+    }
+
+    function getActualPosition(array, index, classActivity) {
+        removeActive(array, classActivity);
+        addActive(array[index], classActivity);
+    }
+
+    function getTotalSlides(className, slidesArray) {
+        if(slidesArray.length < 10) {
+            className.textContent = '0' + slidesArray.length;
+        }else {
+            className.textContent = slidesArray.length;
+        }
+    }
+
+    function removeActive(array, className) {
+        array.forEach(element => {
+            element.classList.remove(className);
+        });
+    }
+
+    function addActive(item, className) {
+        item.classList.add(className);
+    }
+
+    
 
     
     
