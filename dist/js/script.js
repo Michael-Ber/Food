@@ -477,7 +477,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         
     }
-    
+
     function calcResult() {
         if(!sex || !ratio || !weight || !height || !age) {
             result.textContent = '____';
@@ -499,8 +499,41 @@ window.addEventListener('DOMContentLoaded', () => {
     getDynamicInformation('#weight');
     getDynamicInformation('#height');
     getDynamicInformation('#age');
-    
 
+    //Experiments with classes
+    
+    class User {
+        constructor(name, age) {
+            this.name = name;
+            this._age = age;
+        }
+        #surname = 'Bersh';
+
+        say = () => {
+            console.log(`Пользователь ${this.name}${this.#surname} возрастом: ${this._age}`);
+        }
+
+        get age() {
+            return this._age;
+        }
+
+        set age (age) {
+            if(typeof age === 'number' && age > 0 && age < 110) {
+                this._age = age;
+            }else {
+                console.log('Недопустимое значение');
+            }
+        }
+    }
+
+    let mic = new User('Michael', 33);
+    mic.say();
+    console.log(mic.age);
+    mic.age = 60;
+    mic.say();
+    console.log(mic.age);
+    mic.surname = 'nebersh';
+    mic.say();
 
 
 
